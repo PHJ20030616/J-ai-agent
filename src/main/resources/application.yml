@@ -10,7 +10,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   ai:
     dashscope:
-      api-key: sk-dbfdb95973b44f9d888b25aa5f48c1bb
+      api-key: sk-dbfdb9597
       chat:
         options:
           model: glm-4.7
