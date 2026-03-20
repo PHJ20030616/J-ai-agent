@@ -46,6 +46,7 @@ public class KnowledgeBaseLoaderService {
 
         int batchSize = 25;
         for (int i = 0; i < enrichedDocuments.size(); i += batchSize) {
+//            log.info("正在添加文档批次: {}/{}", (i / batchSize) + 1, (enrichedDocuments.size() + batchSize - 1) / batchSize);
             int end = Math.min(i + batchSize, enrichedDocuments.size());
             List<Document> batch = enrichedDocuments.subList(i, end);
             vectorStore.add(batch);

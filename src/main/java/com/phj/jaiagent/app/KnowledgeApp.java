@@ -139,8 +139,6 @@ public class KnowledgeApp {
     @Resource
     private VectorStore knowledgeAppVectorStore;
 
-//    @Resource
-//    private Advisor loveAppRagCloudAdvisor;
 
     @Resource
     private VectorStore pgVectorVectorStore;
@@ -164,11 +162,11 @@ public class KnowledgeApp {
                 .user(rewrittenMessage)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 // 应用 RAG 知识库问答
-                .advisors(new QuestionAnswerAdvisor(knowledgeAppVectorStore))
+//                .advisors(new QuestionAnswerAdvisor(knowledgeAppVectorStore))
                 // 应用 RAG 检索增强服务（基于云知识库服务）
 //                .advisors(loveAppRagCloudAdvisor)
 //                 应用 RAG 检索增强服务（基于 PgVector 向量存储）
-//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
 //                .advisors(
 //                        LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(

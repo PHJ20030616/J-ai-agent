@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
-@Configuration
+//@Configuration
 public class KnowledgeAppVectorStoreConfig {
 
     @Resource
@@ -27,7 +27,7 @@ public class KnowledgeAppVectorStoreConfig {
     private MyKeywordEnricher myKeywordEnricher;
 
     @Bean
-    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
+    VectorStore knowledgeAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
         // 加载文档
         List<Document> documentList = knowledgeAppDocumentLoader.loadText();

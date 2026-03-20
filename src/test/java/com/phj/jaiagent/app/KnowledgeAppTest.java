@@ -28,13 +28,14 @@ class KnowledgeAppTest {
 
     @Test
     void testdoChatWithReport() {
-        KnowledgeApp.KnowledgeReport knowledgeReport = knowledgeApp.doChatWithReport("什么是缓存击穿？(简要回答)", chatId);
+        KnowledgeApp.KnowledgeReport knowledgeReport =
+                knowledgeApp.doChatWithReport("Redis的哨兵机制是什么?", chatId);
         Assertions.assertNotNull(knowledgeReport);
     }
 
         @Test
         void testDoChatWithRag() {
-            String result = knowledgeApp.doChatWithRag("什么是redis缓存击穿", chatId);
+            String result = knowledgeApp.doChatWithRag("Redis的哨兵机制是什么?", chatId);
             Assertions.assertNotNull(result);
         }
 }

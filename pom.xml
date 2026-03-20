@@ -52,6 +52,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-tika-document-reader</artifactId>
+        </dependency>
         <!-- 阿里云百练、灵积大模型服务 -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -64,11 +68,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--pdf文档读取-->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-tika-document-reader</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.ai</groupId>-->
+<!--            <artifactId>spring-ai-pdf-document-reader</artifactId>-->
+<!--        </dependency>-->
         <!-- Spring AI Alibaba -->
         <dependency>
             <groupId>com.alibaba.cloud.ai</groupId>
