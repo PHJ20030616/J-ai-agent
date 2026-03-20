@@ -18,7 +18,7 @@ public class MyKeywordEnricher {
     private ChatModel dashscopeChatModel;
 
     public List<Document> enrichDocuments(List<Document> documents) {
-        KeywordMetadataEnricher keywordMetadataEnricher = new KeywordMetadataEnricher(dashscopeChatModel, 20);
+        KeywordMetadataEnricher keywordMetadataEnricher = new KeywordMetadataEnricher(dashscopeChatModel, 5);
         return  keywordMetadataEnricher.apply(documents);
     }
 }
