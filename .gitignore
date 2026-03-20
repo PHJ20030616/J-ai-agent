@@ -1,6 +1,7 @@
 tmp
 src/main/resources/application-local.yml
 src/main/resources/application.yml
+src/main/resources/document
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar

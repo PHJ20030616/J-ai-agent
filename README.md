@@ -1407,3 +1407,357 @@ import java.util.List;
 
 
 
+## RAG基础原理
+
+RAG（Retr⁠ieval-Augmented ‌Generation，检索增强生成）是一种结合信息检索技术和 A‎I 内容生成的混合架构，可以解决‌大模型的知识时效性限制和幻觉问题。
+
+简单来说，RA⁠G 就像给 AI 配了一个‌ “小抄本”，让 AI 回答问题前先查一查特定的知识‎库来获取知识，确保回答是基‌于真实资料而不是凭空想象。
+
+从技术角度看，R⁠AG 在大语言模型生成回答之前‌，会先从外部知识库中检索相关信息，然后将这些检索到的内容作为‎额外上下文提供给模型，引导其生‌成更准确、更相关的回答。
+
+通过 RAG 技术改造后，AI 就能：
+
+- 准确回答关于特定内容的问题
+- 在合适的时机推荐相关课程和服务
+- 用特定的语气和用户交流
+- 提供更新、更准确的建议
+
+### RAG 工作流程
+
+RAG 技⁠术实现主要包含以下‌ 4 个核心步骤：
+
+- 文档收集和切割
+- 向量转换和存储
+- 文档过滤和检索
+- 查询增强和关联
+
+#### 文档收集和切割
+
+文档收集：从各种来源（网页、PDF、数据库等）收集原始文档
+
+文档预处理：清洗、标准化文本格式
+
+文档切割：⁠将长文档分割成适当‌大小的片段（俗称 chunks）
+
+- 基于固定大小（如 512 个 token）
+- 基于语义边界（如段落、章节）
+- 基于递归分割策略（如递归字符 n-gram 切割）
+
+#### 向量转换和存储
+
+向量转换：⁠使用 Embedd‌ing 模型将文本块转换为高维向量表‎示，可以捕获到文本‌的语义特征
+
+向量存储：⁠将生成的向量和对应‌文本存入向量数据库，支持高效的相似性‎搜索
+
+#### 文档过滤和检索
+
+查询处理：将用户问题也转换为向量表示
+
+过滤机制：基于元数据、关键词或自定义规则进行过滤
+
+相似度搜索⁠：在向量数据库中查‌找与问题向量最相似的文档块，常用的相‎似度搜索算法有余弦‌相似度、欧氏距离等
+
+上下文组装：将检索到的多个文档块组装成连贯上下文
+
+#### 查询增强和关联
+
+提示词组装：将检索到的相关文档与用户问题组合成增强提示
+
+上下文融合：大模型基于增强提示生成回答
+
+源引用：在回答中添加信息来源引用
+
+后处理：格式化、摘要或其他处理以优化最终输出
+
+#### 完整工作流程
+
+![image-20260320084550353](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320084552269.png)
+
+### RAG 相关技术
+
+#### Embedding 和 Embedding 模型
+
+Embeddin⁠g 嵌入是将高维离散数据（如文‌字、图片）转换为低维连续向量的过程。这些向量能在数学空间中表‎示原始数据的语义特征，使计算机‌能够理解数据间的相似性。
+
+Embedding 模型是⁠执行这种转换算法的机器学习模型，如 Word2Ve‌c（文本）、ResNet（图像）等。不同的 Embedding 模型产生的向量表示和维度数不同，一般‎维度越高表达能力更强，可以捕获更丰富的语义信息和更‌细微的差别，但同样占用更多存储空间。
+
+#### 向量数据库
+
+向量数据库⁠是专门存储和检索向量‌数据的数据库系统。通过高效索引算法实现快‎速相似性搜索，支持 ‌K 近邻查询等操作。
+
+![image-20260320084725901](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320084727632.png)
+
+注意，并不⁠是只有向量数据库才‌能存储向量数据，只不过与传统数据库不‎同，向量数据库优化‌了高维向量的存储和检索。
+
+AI 的流行带火了一波⁠向量数据库和向量存储，比如 Milvus、‌Pinecone 等。此外，一些传统数据库也可以通过安装插件实现向量存储和检索，比如‎ PGVector、Redis Stack‌ 的 RediSearch 等。
+
+用一张图来了解向量数据库的分类：
+
+![image-20260320084821632](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320084823409.png)
+
+#### 召回
+
+召回是信息检索中的第一阶段，目标是从大规模数据集中快速筛选出可能相关的候选项子集。**强调速度和广度，而非精确度。**
+
+举个例子，我们要从搜⁠索引擎查询 “Redis的缓存击穿问题” 时，召回阶段会从数十亿网页中快速筛选出数千个含有 “Reids”、“导缓存击穿”、“程序员” 等相关内容的页面，为后‌续粗略排序和精细排序提供候选集。
+
+#### 精排和 Rank 模型
+
+精排（精确排⁠序）是搜索 / 推荐系统‌的最后阶段，使用计算复杂度更高的算法，考虑更多特‎征和业务规则，对少量候选‌项进行更复杂、精细的排序。
+
+比如，短视频推荐⁠先通过召回获取数万个可能相关视频‌，再通过粗排缩减至数百条，最后精排阶段会考虑用户最近的互动、视频‎热度、内容多样性等复杂因素，确定‌最终展示的 10 个视频及顺序。
+
+![image-20260320085033864](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320085051113.png)
+
+Rank ⁠模型（排序模型）负‌责对召回阶段筛选出的候选集进行精确排‎序，考虑多种特征评‌估相关性。
+
+现代 Rank 模型⁠通常基于深度学习，如 BERT、Lamb‌daMART 等，综合考虑查询与候选项的相关性、用户历史行为等因素。举个例子，电‎商推荐系统会根据商品特征、用户偏好、点击‌率等给每个候选商品打分并排序。
+
+![image-20260320085207301](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320085209110.png)
+
+#### 混合检索策略
+
+混合检索策⁠略结合多种检索方法‌的优势，提高搜索效果。常见组合包括关‎键词检索、语义检索、知‌识图谱等。
+
+比如在 AI 大⁠模型开发平台 Dify 中，就为‌用户提供了 “基于全文检索的关键词搜索 + 基于向量检索的语义检‎索” 的混合检索策略，用户还可以‌自己设置不同检索方式的权重。
+
+## Spring AI + 本地知识库
+
+标准的 RAG 开发步骤：
+
+1. 文档收集和切割
+2. 向量转换和存储
+3. 切片过滤和检索
+4. 查询增强和关联
+
+简化后的 RAG 开发步骤：
+
+1. 文档准备
+2. 文档读取
+3. 向量转换和存储
+4. 查询增强
+
+### 文档准备
+
+将文档放在src/main/resources/document文件夹中，以pdf格式为例：
+
+![image-20260320090618277](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320090619758.png)
+
+### 文档读取
+
+首先，我们要对自己准备好的知识库文档进行处理，然后保存到向量数据库中。这个过程俗称 ETL（抽取、转换、加载），Spring AI 提供了对 ETL 的支持，参考 [官方文档](https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html#_markdown)。
+
+ETL 的 3 大核心组件，按照顺序执行：
+
+- DocumentReader：读取文档，得到文档列表
+- DocumentTransformer：转换文档，得到处理后的文档列表
+- DocumentWriter：将文档列表保存到存储中（可以是向量数据库，也可以是其他存储）
+
+![image-20260320090746347](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320090748251.png)
+
+1）引入依赖
+
+`PagePdfDocumentReader`使用 Apache PdfBox 库来解析 PDF 文档。
+
+```
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-pdf-document-reader</artifactId>
+</dependency>
+```
+
+2）在根目录下新建 `rag` 包，编写文档加载器类 KnowledgeAppDocumentLoader，负责读取所有 pdf 文档并转换为 Document 列表。代码如下：
+
+```
+package com.phj.jaiagent.rag;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.reader.tika.TikaDocumentReader;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * AI开发者智能助手-文档加载器
+ */
+@Component
+@Slf4j
+public class KnowledgeAppDocumentLoader {
+
+    private final ResourcePatternResolver resourcePatternResolver;
+
+    @Value("${spring.document.path}")
+    private String documentPath;
+
+    public KnowledgeAppDocumentLoader(ResourcePatternResolver resourcePatternResolver) {
+        this.resourcePatternResolver = resourcePatternResolver;
+    }
+
+    /**
+     * 加载多篇 pdf 文档
+     *
+     * @return
+     */
+    List<Document> loadText() {
+        try {
+            Resource[] resources = resourcePatternResolver.getResources(documentPath);
+            List<Document> documents = new ArrayList<>();
+            for (Resource resource : resources) {
+                TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+                documents.addAll(tikaDocumentReader.read());
+            }
+            return documents;
+        } catch (IOException e) {
+            log.error("加载PDF文档失败", e);
+            return Collections.emptyList();
+        }
+    }
+}
+
+```
+
+3）编写测试类测试
+
+```
+package com.phj.jaiagent.rag;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.ai.document.Document;
+
+import java.util.List;
+
+@SpringBootTest
+class KnowledgeAppDocumentLoaderTest {
+
+    @Autowired
+    private KnowledgeAppDocumentLoader knowledgeAppDocumentLoader;
+
+    @Test
+    void loadText() {
+        List<Document> documents = knowledgeAppDocumentLoader.loadText();
+        Assertions.assertNotNull(documents);
+        System.out.println("加载文档数量: " + documents.size());
+        documents.forEach(doc -> System.out.println("文档内容: " + doc.getText().substring(0, Math.min(100, doc.getText().length()))));
+    }
+}
+```
+
+### 向量转换和存储
+
+为了实现方便⁠，我们先使用 Spri‌ng AI 内置的、基于内存读写的向量数据库‎ SimpleVect‌orStore 来保存文档。
+
+在将文档写入到数据库‌前，会先调用 Embedding 大模型将文档转‎换为向量，实际保存到数据‌库中的是向量类型的数据。
+
+在 `rag` 包下新建 KnowledgeAppVectorStoreConfig 类，实现初始化向量数据库并且保存文档的方法。代码如下：
+
+```
+package com.phj.jaiagent.rag;
+
+import jakarta.annotation.Resource;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SimpleVectorStore;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+/**
+ * 向量数据库配置（初始化基于内存的向量数据库 Bean）
+ */
+@Configuration
+public class KnowledgeAppVectorStoreConfig {
+
+    @Resource
+    private KnowledgeAppDocumentLoader knowledgeAppDocumentLoader;
+
+    @Resource
+    private MyTokenTextSplitter myTokenTextSplitter;
+
+    @Resource
+    private MyKeywordEnricher myKeywordEnricher;
+
+    @Bean
+    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
+        SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
+        // 加载文档
+        List<Document> documentList = knowledgeAppDocumentLoader.loadText();
+        // 自主切分文档
+//        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documentList);
+        // 自动补充关键词元信息
+//        List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documentList);
+//        simpleVectorStore.add(enrichedDocuments);
+        simpleVectorStore.add(documentList);
+        return simpleVectorStore;
+    }
+}
+
+```
+
+### 查询增强
+
+Spring AI 通过⁠ Advisor 特性提供了开箱即用的 RAG 功‌能。主要是 QuestionAnswerAdvisor 问答拦截器和 RetrievalAug‎mentationAdvisor 检索增强拦截器‌，前者更简单易用、后者更灵活强大。
+
+查询增强的原理其实很简单⁠。向量数据库存储着 AI 模型本身不知道的数据，当用户问题‌发送给 AI 模型时，QuestionAnswerAdvisor 会查询向量数据库，获取与用户问题相关的文档‎。然后从向量数据库返回的响应会被附加到用户文本中，为 ‌AI 模型提供上下文，帮助其生成回答。
+
+此处我们就选用更简单易用的 QuestionAnswerAdvisor 问答拦截器，在 `KnowledgeApp` 中新增和 RAG 知识库进行对话的方法。代码如下：
+
+```
+/**
+     * 和 RAG 知识库进行对话
+     *
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithRag(String message, String chatId) {
+        // 查询重写
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                // 使用改写后的查询
+                .user(rewrittenMessage)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 应用 RAG 知识库问答
+                .advisors(new QuestionAnswerAdvisor(knowledgeAppVectorStore))
+                // 应用 RAG 检索增强服务（基于云知识库服务）
+//                .advisors(loveAppRagCloudAdvisor)
+//                 应用 RAG 检索增强服务（基于 PgVector 向量存储）
+//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
+//                .advisors(
+//                        LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+//                                loveAppVectorStore, "单身"
+//                        )
+//                )
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+```
+
+### 测试
+
+```
+@Test
+    void testDoChatWithRag() {
+        String result = knowledgeApp.doChatWithRag("什么是redis缓存击穿", chatId);
+        Assertions.assertNotNull(result);
+    }
+```
+
+
+
