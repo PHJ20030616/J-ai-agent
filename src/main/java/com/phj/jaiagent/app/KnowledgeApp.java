@@ -1,8 +1,8 @@
 package com.phj.jaiagent.app;
 
 import com.phj.jaiagent.advisor.MyLoggerAdvisor;
-import com.phj.jaiagent.advisor.ReReadingAdvisor;
 import com.phj.jaiagent.chatmemory.FileBasedChatMemory;
+import com.phj.jaiagent.rag.KnowledgeAppRagCustomAdvisorFactory;
 import com.phj.jaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -167,10 +167,12 @@ public class KnowledgeApp {
 //                .advisors(loveAppRagCloudAdvisor)
 //                 应用 RAG 检索增强服务（基于 PgVector 向量存储）
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                // TODO 目前这里的检索增强服务反而会影响结果，待修复
+
                 // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
 //                .advisors(
-//                        LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
-//                                loveAppVectorStore, "单身"
+//                        KnowledgeAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+//                                pgVectorVectorStore
 //                        )
 //                )
                 .call()

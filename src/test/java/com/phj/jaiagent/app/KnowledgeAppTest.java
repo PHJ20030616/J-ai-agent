@@ -35,7 +35,8 @@ class KnowledgeAppTest {
 
         @Test
         void testDoChatWithRag() {
-            String result = knowledgeApp.doChatWithRag("Redis的哨兵机制是什么?", chatId);
+            String result = knowledgeApp.doChatWithRag("什么是缓存雪崩", chatId);
+//            String result = knowledgeApp.doChatWithRag("什么是JDBC?", chatId);
             Assertions.assertNotNull(result);
         }
 }
