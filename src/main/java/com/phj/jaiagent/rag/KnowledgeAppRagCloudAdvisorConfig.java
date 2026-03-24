@@ -22,7 +22,7 @@
 //    private String dashScopeApiKey;
 //
 //    @Bean
-//    public Advisor loveAppRagCloudAdvisor() {
+//    public Advisor knowledgeAppRagCloudAdvisor() {
 //        DashScopeApi dashScopeApi = DashScopeApi.builder()
 //                .apiKey(dashScopeApiKey)
 //                .build();

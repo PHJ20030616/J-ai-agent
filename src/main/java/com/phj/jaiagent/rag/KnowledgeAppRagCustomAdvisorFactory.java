@@ -19,7 +19,7 @@ public class KnowledgeAppRagCustomAdvisorFactory {
      * @param vectorStore 向量存储
      * @return 自定义的 RAG 检索增强顾问
      */
-    public static Advisor createLoveAppRagCustomAdvisor(VectorStore vectorStore) {
+    public static Advisor createknowledgeAppRagCustomAdvisor(VectorStore vectorStore) {
         // 过滤特定状态的文档
 //        Filter.Expression expression = new FilterExpressionBuilder()
 //                .eq("status", status)

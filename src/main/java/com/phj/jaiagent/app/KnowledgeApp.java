@@ -19,6 +19,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -96,21 +97,21 @@ public class KnowledgeApp {
         return content;
     }
 
-//    /**
-//     * AI 基础对话（支持多轮对话记忆，SSE 流式传输）
-//     *
-//     * @param message
-//     * @param chatId
-//     * @return
-//     */
-//    public Flux<String> doChatByStream(String message, String chatId) {
-//        return chatClient
-//                .prompt()
-//                .user(message)
-//                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
-//                .stream()
-//                .content();
-//    }
+    /**
+     * AI 基础对话（支持多轮对话记忆，SSE 流式传输）
+     *
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public Flux<String> doChatByStream(String message, String chatId) {
+        return chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .stream()
+                .content();
+    }
 //
     // AI 技术报告类
     record KnowledgeReport(String title, List<String> suggestions) {
@@ -169,14 +170,14 @@ public class KnowledgeApp {
                 // 应用 RAG 知识库问答
                 .advisors(new QuestionAnswerAdvisor(KnowledgeAppVectorStoreConfig))
                 // 应用 RAG 检索增强服务（基于云知识库服务）
-//                .advisors(loveAppRagCloudAdvisor)
+//                .advisors(knowledgeAppRagCloudAdvisor)
 //                 应用 RAG 检索增强服务（基于 PgVector 向量存储）
 //                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 // TODO 目前这里的检索增强服务反而会影响结果，待修复
 
                 // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
 //                .advisors(
-//                        KnowledgeAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+//                        KnowledgeAppRagCustomAdvisorFactory.createknowledgeAppRagCustomAdvisor(
 //                                pgVectorVectorStore
 //                        )
 //                )
@@ -219,7 +220,7 @@ public class KnowledgeApp {
     private ToolCallbackProvider toolCallbackProvider;
 
     /**
-     * AI 恋爱报告功能（调用 MCP 服务）
+     * 报告功能（调用 MCP 服务）
      *
      * @param message
      * @param chatId
