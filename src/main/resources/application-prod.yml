@@ -1,2 +1,67 @@
-# 可以编写生产环境的配置，会覆盖 application.yml 配置
-# 注意提交时不要包含敏感信息（或者不要提交该文件）
+spring:
+  application:
+    name: J-ai-agent
+
+  # 知识库文档的存储路径
+  document:
+    path: classpath:/document/*.pdf
+  #  profiles:
+  #    active:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/J-ai-agent
+    username: 你的postgresql用户名
+    password: 你的postgresql密码
+    driver-class-name: org.postgresql.Driver
+  ai:
+    dashscope:
+      api-key: 你的api key
+      chat:
+        options:
+          model: glm-4.7
+          incremental-output: true
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        dimensions: 1536
+        distance-type: COSINE_DISTANCE
+        max-document-batch-size: 10000
+    #    ollama:
+    #      base-url: http://localhost:11434
+    #      chat:
+    #        model: gemma3:1b
+    cp:
+      client:
+        #        sse:
+        #          connections:
+        #            server1:
+        #              url: http://localhost:8127
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+# springdoc-openapi????
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      # ????????
+      packages-to-scan: com.phj.jaiagent.controller
+# knife4j???????????????
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# searchAPI
+search-api:
+  # 需要替换为你自己的 key
+  api-key: 你的 searchAPI key
