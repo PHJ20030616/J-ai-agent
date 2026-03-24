@@ -1,3 +1,33 @@
+![image-20260324152452048](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260324152453467.png)
+
+# 🚀 J-AI-Agent (企业级自主规划 AI 智能体)
+
+> **不只是一个对话机器人，而是一个具备“思考、规划、执行”闭环能力的智能体架构实践。**
+
+## 📖 项目简介
+
+本项目是一个基于 **Java 21 + Spring Boot 3.x + Spring AI** 构建的企业级高阶 AI 智能体应用。项目摒弃了简单的“API 透传”模式，参考了 OpenManus 的设计理念，从零构建了 **分层智能体架构（BaseAgent -> ReActAgent -> ToolCallAgent）**。
+
+通过整合 **高阶 RAG（检索增强生成）**、**Tool Calling（工具调用）** 与前沿的 **MCP（模型上下文协议）**，该 Agent 能够自主理解复杂的用户意图，拆解任务，并在沙盒环境中通过调用外部工具（如全网搜索、文件处理、PDF生成、终端命令执行等）完成长链路的复杂任务。
+
+## ✨ 核心技术亮点 (Highlights)
+
+- 🧠 **自主规划与深度思考 (ReAct & CoT)**：实现 Agent Loop 引擎，支持思维链推理与多步任务自主规划，内置防死循环与终止态识别机制。
+- 📚 **高阶 RAG 数据管道**：构建了完整的 ETL 文档处理流。基于自定义文档解析器与 **PGvector** 向量数据库，融合了多查询扩展 (Multi-Query)、查询重写 (Query Rewrite) 及元数据动态过滤，大幅提升垂直领域知识召回率。
+- 🔌 **前沿 MCP 协议集成**：率先引入 Model Context Protocol (MCP)，通过 Stdio/SSE 双模式无缝接入高德地图、Pexels图片检索等外部服务，极大拓宽了 AI 的能力边界。
+- 💾 **高性能会话记忆**：摒弃常规内存存储，基于 **Kryo 高性能序列化** 与 Spring AI Advisor 自主实现会话记忆持久化，保障多轮对话上下文精准连贯。
+- ⚡ **极致体验与可观测性**：全面采用 **SSE (Server-Sent Events)** 异步流式输出，实时透传 Agent 的思考与工具调用过程，提供类似 ChatGPT 的极致交互体验。
+
+## 🛠️ 技术栈
+- **后端框架**: Java 21, Spring Boot 3.x, Spring AI, Hutool
+- **大模型生态**: Ollama (本地化部署), 阿里百炼 / 通义千问, LangChain 理念
+- **数据与存储**: PGvector (向量数据库), Kryo (高性能序列化)
+- **协议与接口**: MCP (Model Context Protocol), SSE, OpenAPI
+
+
+
+
+
 # TODO
 
 **扩展思路**
