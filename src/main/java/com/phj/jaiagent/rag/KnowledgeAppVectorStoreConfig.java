@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
-//@Configuration
+@Configuration
 public class KnowledgeAppVectorStoreConfig {
 
     @Resource
@@ -35,7 +35,12 @@ public class KnowledgeAppVectorStoreConfig {
         List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documentList);
         // 自动补充关键词元信息
         List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(splitDocuments);
-        simpleVectorStore.add(enrichedDocuments);
+        // 判断增强后的文档列表是否不为空且包含元素，避免抛出 Documents list cannot be empty 异常
+        if (enrichedDocuments != null && !enrichedDocuments.isEmpty()) {
+            // 将增强后的文档列表添加到向量数据库中
+            simpleVectorStore.add(enrichedDocuments);
+        // 结束if条件判断
+        }
 //        simpleVectorStore.add(splitDocuments);
         return simpleVectorStore;
     }

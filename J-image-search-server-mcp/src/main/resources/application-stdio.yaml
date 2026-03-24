@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: J-image-search-server-mcp
+  ai:
+    mcp:
+      server:
+        name: J-image-search-server-mcp
+        version: 0.0.1
+        type: SYNC
+        # stdio
+        stdio: true
+  # stdio
+  main:
+    web-application-type: none
+    banner-mode: off

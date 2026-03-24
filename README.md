@@ -2582,3 +2582,750 @@ class MyTokenTextSplitter {
 - 允许空上下文查询（即处理边界情况）
 - 提供友好的错误提示
 - 引导用户提供必要信息
+
+## 工具调用
+
+工具调用，大幅增强 AI ‎的能力，并实战主流工具的开发‌，熟悉工具的原理和高级特性。
+
+具体内容包括：
+
+- 工具调用介绍
+- Spring AI 工具开发
+- 主流工具开发
+- 文件操作
+- 联网搜索
+- 网页抓取
+- 终端操作
+- 资源下载
+- PDF 生成
+- 工具进阶知识（原理和高级特性）
+
+### 什么是工具调用？
+
+工具调用（Tool Calling）可以理解为让 AI 大模型 **借用外部工具** 来完成它自己做不到的事情。
+
+跟人类一样⁠，如果只凭手脚完成‌不了工作，那么就可以利用工具箱来完成‎。
+
+工具可以是⁠任何东西，比如网页‌搜索、对外部 API 的调用、访问外‎部数据、或执行特定‌的代码等。
+
+比如用户提⁠问 “帮我查询上海最‌新的天气”，AI 本身并没有这些知识，它‎就可以调用 “查询天‌气工具”，来完成任务。
+
+目前工具调⁠用技术发展的已经比较‌成熟了，几乎所有主流的、新出的 AI 大‎模型和 AI 应用开‌发平台都支持工具调用。
+
+### 工具调用的工作原理
+
+工具调用的工作原理非常简单，**并不是 AI 服务器自己调用这些工具、也不是把工具的代码发送给 AI 服务器让它执行**，它只能提出要求，表示 “我需要执行 XX 工具完成任务”。而真正执行工具的是我们自己的应用程序，执行后再把结果告诉 AI，让它继续工作。
+
+虽然看起来是 AI 在调用工具，但实际上整个过程是 **由我们的应用程序控制的**。AI 只负责决定什么时候需要用工具，以及需要传递什么参数，真正执行工具的是我们的程序。
+
+举个例子，你有一个爆破工具⁠，用户像 AI 提了需求 ” 我要拆这栋房子 “，虽然‌ AI 表示可以用爆破工具，但是需要经过你的同意，才能执行爆破。反之，如果把爆破工具植入给 AI，A‎I 觉得自己能炸了，就炸了，不需要再问你的意见。而‌且这样也给 AI 服务器本身增加了压力。
+
+### 工具调用和功能调用
+
+大家可能看到过 F⁠unction Calling（功‌能调用）这个概念，别担心，其实它和 Tool Calling（工具调‎用）完全是同一概念！只是不同平台或‌每个人习惯的叫法不同而已。
+
+![image-20260323091327022](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323091328788.png)
+
+### 工具调用的技术选型
+
+我们先来梳理一下工具调用的流程：
+
+1. 工具定义：程序告诉 AI “你可以使用这些工具”，并描述每个工具的功能和所需参数
+2. 工具选择：AI 在对话中判断需要使用某个工具，并准备好相应的参数
+3. 返回意图：AI 返回 “我想用 XX 工具，参数是 XXX” 的信息
+4. 工具执行：我们的程序接收请求，执行相应的工具操作
+5. 结果返回：程序将工具执行的结果发回给 AI
+6. 继续对话：AI 根据工具返回的结果，生成最终回答给用户
+
+通过上述流程，我们会发现，⁠程序需要和 AI 多次进行交互、还要能够执行对应的‌工具，怎么实现这些呢？我们当然可以自主开发，不过还是更推荐使用 Spring AI、LangChai‎n 等开发框架。此外，有些 AI 大模型服务商也提‌供了对应的 SDK，都能够简化代码编写。
+
+## Spring AI 工具开发
+
+![image-20260323091553480](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323091554741.png)
+
+1. 工具定义与注册：Spring AI 可以通过简洁的注解自动生成工具定义和 JSON Schema，让 Java 方法轻松转变为 AI 可调用的工具。
+2. 工具调用请求：Spring AI 自动处理与 AI 模型的通信并解析工具调用请求，并且支持多个工具链式调用。
+3. 工具执行：Spring AI 提供统一的工具管理接口，自动根据 AI 返回的工具调用请求找到对应的工具并解析参数进行调用，让开发者专注于业务逻辑实现。
+4. 处理工具结果：Spring AI 内置结果转换和异常处理机制，支持各种复杂 Java 对象作为返回值并优雅处理错误情况。
+5. 返回结果给模型：Spring AI 封装响应结果并管理上下文，确保工具执行结果正确传递给模型或直接返回给用户。
+6. 生成最终响应：Spring AI 自动整合工具调用结果到对话上下文，支持多轮复杂交互，确保 AI 回复的连贯性和准确性。
+
+### 工具定义模式
+
+![image-20260323092116021](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323092116986.png)
+
+1）Methods 模式：通过 `@Tool` 注解定义工具，通过 `tools` 方法绑定工具
+
+```java
+class WeatherTools {
+    @Tool(description = "Get current weather for a location")
+    public String getWeather(@ToolParam(description = "The city name") String city) {
+        return "Current weather in " + city + ": Sunny, 25°C";
+    }
+}
+
+
+ChatClient.create(chatModel)
+    .prompt("What's the weather in Beijing?")
+    .tools(new WeatherTools())
+    .call();
+```
+
+2）Functions 模式：通过 `@Bean` 注解定义工具，通过 `functions` 方法绑定工具
+
+```java
+@Configuration
+public class ToolConfig {
+    @Bean
+    @Description("Get current weather for a location")
+    public Function<WeatherRequest, WeatherResponse> weatherFunction() {
+        return request -> new WeatherResponse("Weather in " + request.getCity() + ": Sunny, 25°C");
+    }
+}
+
+
+ChatClient.create(chatModel)
+    .prompt("What's the weather in Beijing?")
+    .functions("weatherFunction")
+    .call();
+```
+
+### 定义工具
+
+Spring AI 提供了两种定义工具的方法 —— **注解式** 和 **编程式**。
+
+1）注解式：只需使用 `@Tool` 注解标记普通 Java 方法，就可以定义工具了，简单直观。
+
+每个工具最好都添加详细清晰的描述，帮助 AI 理解何时应该调用这个工具。对于工具方法的参数，可以使用 `@ToolParam` 注解提供额外的描述信息和是否必填。
+
+```
+class WeatherTools {
+    @Tool(description = "获取指定城市的当前天气情况")
+    String getWeather(@ToolParam(description = "城市名称") String city) {
+        
+        return "北京今天晴朗，气温25°C";
+    }
+}
+```
+
+2）编程式⁠：如果想在运行时动‌态创建工具，可以选择编程式来定义工具，‎更灵活。
+
+先定义工具类：
+
+```
+class WeatherTools {
+    String getWeather(String city) {
+        
+        return "北京今天晴朗，气温25°C";
+    }
+}
+```
+
+然后将工具类⁠转换为 ToolCall‌back 工具定义类，之后就可以把这个类绑定给 ‎ChatClient，从‌而让 AI 使用工具了。
+
+```
+Method method = ReflectionUtils.findMethod(WeatherTools.class, "getWeather", String.class);
+ToolCallback toolCallback = MethodToolCallback.builder()
+    .toolDefinition(ToolDefinition.builder(method)
+            .description("获取指定城市的当前天气情况")
+            .build())
+    .toolMethod(method)
+    .toolObject(new WeatherTools())
+    .build();
+```
+
+其实你会发⁠现，编程式就是把注‌解式的那些参数，改成通过调用方法来设置‎了而已。
+
+在定义工具时，需要注⁠意方法参数和返回值类型的选择。Sprin‌g AI 支持大多数常见的 Java 类型作为参数和返回值，包括基本类型、复杂对象、‎集合等。而且返回值需要是可序列化的，‌因为它将被发送给 AI 大模型。
+
+### 使用工具
+
+定义好工具后⁠，Spring AI ‌提供了多种灵活的方式将工具提供给 ChatC‎lient，让 AI ‌能够在需要时调用这些工具。
+
+1）按需使用：这是最简单的方式，直接在构建 ChatClient 请求时通过 `tools()` 方法附加工具。这种方式适合只在特定对话中使用某些工具的场景。
+
+```
+String response = ChatClient.create(chatModel)
+    .prompt("北京今天天气怎么样？")
+    .tools(new WeatherTools())  
+    .call()
+    .content();
+```
+
+2）全局使用：如⁠果某些工具需要在所有对话中都可用‌，可以在构建 ChatClient 时注册默认工具。这样，这些工‎具将对从同一个 ChatClie‌nt 发起的所有对话可用。
+
+```
+ChatClient chatClient = ChatClient.builder(chatModel)
+    .defaultTools(new WeatherTools(), new TimeTools())  
+    .build();
+```
+
+3）更底层的使用方⁠式：除了给 ChatClient ‌绑定工具外，也可以给更底层的 ChatModel 绑定工具（毕竟工具‎调用是 AI 大模型支持的能力），‌适合需要更精细控制的场景。
+
+```
+ToolCallback[] weatherTools = ToolCallbacks.from(new WeatherTools());
+
+ChatOptions chatOptions = ToolCallingChatOptions.builder()
+    .toolCallbacks(weatherTools)
+    .build();
+
+Prompt prompt = new Prompt("北京今天天气怎么样？", chatOptions);
+chatModel.call(prompt);
+```
+
+总结一下，在使用工具时，Spring AI 会自动处理工具调用的全过程：从 AI 模型决定调用工具 => 到执行工具方法 => 再到将结果返回给模型 => 最后模型基于工具结果生成最终回答。这整个过程对开发者来说是透明的，我们只需专注于 **实现工具** 的业务逻辑即可。
+
+### 工具生态
+
+首先，工具的本质就是一种插件。能不自己写的插件，就尽量不要自己写。我们可以直接在网上找一些优秀的工具实现，比如 [Spring AI Alibaba 官方文档](https://java2ai.com/docs/1.0.0-M6.1/integrations/tools/) 中提到了社区插件。
+
+虽然文档里只提到了屈指可数的插件数，但我们可以顺藤摸瓜，在 GitHub 社区找到官方提供的更多 [工具源码](https://github.com/alibaba/spring-ai-alibaba/tree/main/community/tool-calls)，包含大量有用的工具！比如翻译工具、网页搜索工具、爬虫工具、地图工具等
+
+## 主流工具开发
+
+如果社区中没找到合⁠适的工具，我们就要自主开发。需要注‌意的是，AI 自身能够实现的功能通常没必要定义为额外的工具，因为这会‎增加一次额外的交互，我们应该将工具‌用于 AI 无法直接完成的任务。
+
+下面我们依次来实现需求分析中提到的 6 大工具，开发过程中我们要 **格外注意工具描述的定义**，因为它会影响 AI 决定是否使用工具。
+
+先在项目根包下新建 `tools` 包，将所有工具类放在该包下；并且工具的返回值尽量使用 String 类型，让结果的含义更加明确。
+
+### 文件操作
+
+文件操作工具主要提供 2 大功能：保存文件、读取文件。
+
+由于会影响系统资源，所以我们需要将文件统一存放到一个隔离的目录进行存储，在 `constant` 包下新建文件常量类，约定文件保存目录为项目根目录下的 `/tmp` 目录中。
+
+```
+public interface FileConstant {
+
+    
+    String FILE_SAVE_DIR = System.getProperty("user.dir") + "/tmp";
+}
+
+```
+
+编写文件操作工具类，通过注解式定义工具，代码如下：
+
+```
+public class FileOperationTool {
+
+    private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + "/file";
+
+    @Tool(description = "Read content from a file")
+    public String readFile(@ToolParam(description = "Name of the file to read") String fileName) {
+        String filePath = FILE_DIR + "/" + fileName;
+        try {
+            return FileUtil.readUtf8String(filePath);
+        } catch (Exception e) {
+            return "Error reading file: " + e.getMessage();
+        }
+    }
+
+    @Tool(description = "Write content to a file")
+    public String writeFile(
+        @ToolParam(description = "Name of the file to write") String fileName,
+        @ToolParam(description = "Content to write to the file") String content) {
+        String filePath = FILE_DIR + "/" + fileName;
+        try {
+            
+            FileUtil.mkdir(FILE_DIR);
+            FileUtil.writeUtf8String(content, filePath);
+            return "File written successfully to: " + filePath;
+        } catch (Exception e) {
+            return "Error writing to file: " + e.getMessage();
+        }
+    }
+}
+
+```
+
+### 联网搜索
+
+联网搜索工具的作用是根据关键词搜索网页列表。
+
+我们可以使用专业的网页搜索 API，如 [Search API](https://www.searchapi.io/baidu) 来实现从多个网站搜索内容，这类服务通常按量计费。当然也可以直接使用 Google 或 Bing 的搜索 API（甚至是通过爬虫和网页解析从某个搜索引擎获取内容）。
+
+阅读 Search API 的 [官方文档](https://www.searchapi.io/baidu)，重点关注 API 的请求参数和返回结果,把⁠接口文档喂给 AI‌，让它帮我们生成工具代码
+
+### 网页抓取
+
+网页抓取工具的作用是根据网址解析到网页的内容。
+
+1）可以使⁠用 jsoup 库‌实现网页内容抓取和解析，首先给项目添‎加依赖：
+
+```
+<dependency>
+    <groupId>org.jsoup</groupId>
+    <artifactId>jsoup</artifactId>
+    <version>1.19.1</version>
+</dependency>
+
+```
+
+2）编写网页抓取工具类，几行代码就搞定了：
+
+```
+public class WebScrapingTool {
+
+    @Tool(description = "Scrape the content of a web page")
+    public String scrapeWebPage(@ToolParam(description = "URL of the web page to scrape") String url) {
+        try {
+            Document doc = Jsoup.connect(url).get();
+            return doc.html();
+        } catch (IOException e) {
+            return "Error scraping web page: " + e.getMessage();
+        }
+    }
+}
+```
+
+## **MCP 协议**
+
+### 需求分析
+
+目前我们的 AI 恋爱大师已经具备了恋爱知识问答以及调用工具的能力，现在让我们再加一个实用功能：根据用户的提问去拓展知识，学习RAG知识库中没有的一些知识
+
+你会怎么实现呢？
+
+按照我们之前学习的知识，应该能想到下面的思路：
+
+1. 直接利用 AI 大模型自身的能力：大模型本身就有一定的训练知识，可以识别出知名的位置信息和约会地点，但是不够准确。
+2. 利用 RAG 知识库：把约会地点整理成知识库，让 AI 利用它来回答，但是需要人工提供足够多的信息。
+3. 利用工具调用：开发一个根据位置查询附近店铺的工具，可以利用第三方地图 API（比如高德地图 API）来实现，这样得到的信息更准确。
+
+显然，第三种方⁠式的效果是最好的。但是既然‌要调用第三方 API，我们还需要手动开发工具么？为什‎么第三方 API 不能直接‌提供服务给我们的 AI 呢？
+
+其实，已经有了！也就是我们今天的主角 —— MCP 协议。
+
+### 什么是 MCP？
+
+MCP（Model Co⁠ntext Protocol，模型上下文协议）是‌一种开放标准，目的是增强 AI 与外部系统的交互能力。MCP 为 AI 提供了与外部工具、资源和‎服务交互的标准化方式，让 AI 能够访问最新数据‌、执行复杂操作，并与现有系统集成。
+
+根据 [官方定义](https://modelcontextprotocol.io/introduction)，MCP 是一种开放协议，它标准化了应用程序如何向大模型提供上下文的方式。可以将 MCP 想象成 AI 应用的 USB 接口。就像 USB 为设备连接各种外设和配件提供了标准化方式一样，MCP 为 AI 模型连接不同的数据源和工具提供了标准化的方法。
+
+前面说的可能有些抽象，让我举些例子帮大家理解 MCP 的作用。首先是 **增强 AI 的能力**，通过 MCP 协议，AI 应用可以轻松接入别人提供的服务来实现更多功能，比如搜索网页、查询数据库、调用第三方 API、执行计算。
+
+其次，我们一定要记住 MCP 它是个 **协议** 或者 **标准**，它本身并不提供什么服务，只是定义好了一套规范，让服务提供者和服务使用者去遵守。这样的好处显而易见，就像 HTTP 协议一样，现在前端向后端发送请求基本都是用 HTTP 协议，什么 get / post 请求类别、什么 401、404 状态码，这些标准能 **有效降低开发者的理解成本**。
+
+此外，标准化还有其他的好处。举个例子，以前⁠我们想给 AI 增加查询地图的能力，需要自己开发工具来调用第三方地图 API；如果‌你有多个项目、或者其他开发者也需要做同样的能力，大家就要重复开发，就导致同样的功能做了多遍、每个人开发的质量和效果也会有差别。而如果官方把查询地图的能力直接做成一个‎服务，谁要用谁接入，不就省去了开发成本、并且效果一致了么？如果大家都陆续开放自己的‌服务，不就相当于打造了一个服务市场，造福广大开发者了么！
+
+**标准可以造就生态。** 其实这并不新鲜了，前端同学可以想想 NPM 包，后端同学可以想想 Maven 仓库还有 Docker 镜像源，不懂编程的同学想想手机应用市场，应该就能理解了。
+
+这就是 MCP 的三大作用：
+
+- 轻松增强 AI 的能力
+- 统一标准，降低使用和理解成本
+- 打造服务生态，造福广大开发者
+
+### MCP 架构
+
+#### 宏观架构
+
+MCP 的核心是 “⁠客户端 - 服务器” 架构，其中 MCP‌ 客户端主机可以连接到多个服务器。客户端主机是指希望访问 MCP 服务的程序，比‎如 Claude Desktop、IDE‌、AI 工具或部署在服务器上的项目。
+
+![image-20260323125506124](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323125507900.png)
+
+#### SDK 3 层架构
+
+如果我们要在程序中使用 MCP 或开发 MCP 服务，可以引入 MCP 官方的 SDK，比如 [Java SDK](https://modelcontextprotocol.io/sdk/java/mcp-overview)。让我们先通过 MCP 官方文档了解 MCP SDK 的架构，主要分为 3 层：
+
+![image-20260323125545249](./assets/image-20260323125545249.png)
+
+分别来看每一层的作用：
+
+- 客户端 / 服务器层：McpClient 处理客户端操作，而 McpServer 管理服务器端协议操作。两者都使用 McpSession 进行通信管理。
+- 会话层（McpSession）：通过 DefaultMcpSession 实现管理通信模式和状态。
+- 传输层（McpTransport）：处理 JSON-RPC 消息序列化和反序列化，支持多种传输实现，比如 Stdio 标准 IO 流传输和 HTTP SSE 远程传输。
+
+客户端和服⁠务端需要先经过下面‌的流程建立连接，之后才能正常交换消息‎：
+
+![image-20260323125643255](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323125644335.png)
+
+#### MCP 客户端
+
+MCP Client 是⁠ MCP 架构中的关键组件，主要负责和 MCP‌ 服务器建立连接并进行通信。它能自动匹配服务器的协议版本、确认可用功能、负责数据传输和 JS‎ON-RPC 交互。此外，它还能发现和使用各种‌工具、管理资源、和提示词系统进行交互。
+
+除了这些核心功⁠能，MCP 客户端还支持一‌些额外特性，比如根管理、采样控制，以及同步或异步操作‎。为了适应不同场景，它提供‌了多种数据传输方式，包括：
+
+- Stdio 标准输入 / 输出：适用于本地调用
+- 基于 Java HttpClient 和 WebFlux 的 SSE 传输：适用于远程调用
+
+客户端可以⁠通过不同传输方式调‌用不同的 MCP 服务，可以是本地的‎、也可以是远程的。‌
+
+#### MCP 服务端
+
+MCP S⁠erver 也是整‌个 MCP 架构的关键组件，主要用来‎为客户端提供各种工‌具、资源和功能支持。
+
+它负责处理客户端⁠的请求，包括解析协议、提供工具‌、管理资源以及处理各种交互信息。同时，它还能记录日志、发送通‎知，并且支持多个客户端同时连接‌，保证高效的通信和协作。
+
+和客户端一样，它也⁠可以通过多种方式进行数据传输，比如‌ Stdio 标准输入 / 输出、基于 Servlet / WebF‎lux / WebMVC 的 SS‌E 传输，满足不同应用场景。
+
+这种设计使⁠得客户端和服务端完‌全解耦，任何语言开发的客户端都可以调‎用 MCP 服务。‌如图：
+
+![image-20260323125853952](./assets/image-20260323125853952.png)
+
+## 使用 MCP
+
+ 3 种使用 MCP 的方式：
+
+- 云平台使用 MCP
+- 软件客户端使用 MCP
+- 程序中使用 MCP
+
+无论是哪种使用方式，原理都是类似的，而且有 2 种可选的使用模式：**本地下载 MCP 服务端代码并运行**（类似引入了一个 SDK），或者 **直接使用已部署的 MCP 服务**（类似调用了别人的 API）。
+
+到哪里去找别人开发的 MCP 服务呢？
+
+### MCP 服务大全
+
+目前已经有⁠很多 MCP 服务‌市场，开发者可以在这些平台上找到各种‎现成的 MCP 服‌务：
+
+- [MCP.so](https://mcp.so/)：较为主流，提供丰富的 MCP 服务目录
+- [GitHub Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers)：开源 MCP 服务集合
+- [阿里云百炼 MCP 服务市场](https://bailian.console.aliyun.com/?tab=mcp#/mcp-market)
+- [Spring AI Alibaba 的 MCP 服务市场](https://java2ai.com/mcp/)
+- [Glama.ai MCP 服务](https://glama.ai/mcp/servers)
+
+其中，绝大多⁠数 MCP 服务市场仅‌提供本地下载 MCP 服务端代码并运行的使用‎方式，毕竟部署 MCP‌ 服务也是需要成本的。
+
+有些云服务平台提⁠供了云端部署的 MCP 服务，比‌如阿里云百炼平台，在线填写配置后就能用，可以轻松和平台上的 AI 应‎用集成。但一般局限性也比较大‌，不太能直接在自己的代码中使用。
+
+## MCP服务开发
+
+### MCP 服务端开发
+
+1）在项目⁠根目录下新建 mo‌dule，名称为 J-image-search-server-mcp	
+
+注意，建议在新项目中 **单独打开该模块**，不要直接在原项目的子文件夹中操作，否则可能出现路径上的问题。
+
+2）引入必⁠要的依赖，包括 L‌ombok、hutool 工具库和 ‎Spring AI‌ MCP 服务端依赖。
+
+有 Stdio、⁠WebMVC SSE 和 Web‌Flux SSE 三种服务端依赖可以选择，开发时只需要填写不同的‎配置，开发流程都是一样的。此处我‌们选择引入 WebMVC：
+
+```
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-mcp-server-webmvc-spring-boot-starter</artifactId>
+    <version>1.0.0-M6</version>
+</dependency>
+```
+
+3）在 re⁠sources 目录下‌编写服务端配置文件。这里我们编写两套配置方案‎，分别实现 stdio‌ 和 SSE 模式的传输。
+
+stdio 配置文件 `application-stdio.yml`（需关闭 web 支持）：
+
+```
+spring:
+  application:
+    name: J-image-search-server-mcp
+  ai:
+    mcp:
+      server:
+        name: J-image-search-server-mcp
+        version: 0.0.1
+        type: SYNC
+        # stdio
+        stdio: true
+  # stdio
+  main:
+    web-application-type: none
+    banner-mode: off
+```
+
+SSE 配置文件 `application-sse.yml`（需关闭 stdio 模式）：
+
+```
+spring:
+  ai:
+    mcp:
+      server:
+        name: J-image-search-server-mcp
+        version: 0.0.1
+        type: SYNC
+        # sse
+        stdio: false
+
+```
+
+然后编写主配置文件 `application.yml`，可以灵活指定激活哪套配置：
+
+```
+spring:
+  application:
+    name: J-image-search-server-mcp
+  profiles:
+    active: stdio
+server:
+  port: 8127
+```
+
+4）编写图片搜索服务类，在 `tools` 包下新建 ImageSearchTool，使用 `@Tool` 注解标注方法，作为 MCP 服务提供的工具。（这个代码可以使用AI生成--将官方文档喂给AI，让他自己编写代码）
+
+```
+package com.phj.jimagesearchservermcp.tools;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+public class ImageSearchTool {
+
+    // 替换为你的 Pexels API 密钥（需从官网申请）
+    private static final String API_KEY = "改为你的 API Key";
+
+    // Pexels 常规搜索接口（请以文档为准）
+    private static final String API_URL = "https://api.pexels.com/v1/search";
+
+    @Tool(description = "search image from web")
+    public String searchImage(@ToolParam(description = "Search query keyword") String query) {
+        try {
+            return String.join(",", searchMediumImages(query));
+        } catch (Exception e) {
+            return "Error search image: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 搜索中等尺寸的图片列表
+     *
+     * @param query
+     * @return
+     */
+    public List<String> searchMediumImages(String query) {
+        // 设置请求头（包含API密钥）
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", API_KEY);
+
+        // 设置请求参数（仅包含query，可根据文档补充page、per_page等参数）
+        Map<String, Object> params = new HashMap<>();
+        params.put("query", query);
+
+        // 发送 GET 请求
+        String response = HttpUtil.createGet(API_URL)
+                .addHeaders(headers)
+                .form(params)
+                .execute()
+                .body();
+
+        // 解析响应JSON（假设响应结构包含"photos"数组，每个元素包含"medium"字段）
+        return JSONUtil.parseObj(response)
+                .getJSONArray("photos")
+                .stream()
+                .map(photoObj -> (JSONObject) photoObj)
+                .map(photoObj -> photoObj.getJSONObject("src"))
+                .map(photo -> photo.getStr("medium"))
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toList());
+    }
+}
+
+```
+
+5）在主类中通过定义 `ToolCallbackProvider` Bean 来注册工具：
+
+```
+package com.phj.jimagesearchservermcp;
+
+import com.phj.jimagesearchservermcp.tools.ImageSearchTool;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+@SpringBootApplication
+public class JImageSearchServerMcpApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(JImageSearchServerMcpApplication.class, args);
+    }
+
+    @Bean
+    public ToolCallbackProvider imageSearchTools(ImageSearchTool imageSearchTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(imageSearchTool)
+                .build();
+    }
+
+}
+
+```
+
+### 客户端开发
+
+接下来直接⁠在根项目中开发客户‌端，调用刚才创建的图片搜索服务。
+
+1）先引入必要的 MCP 客户端依赖
+
+```
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-mcp-client-spring-boot-starter</artifactId>
+    <version>1.0.0-M6</version>
+</dependency>
+```
+
+2）先测试 stdio 传输方式。在 `mcp-servers.json` 配置文件中新增 MCP Server 的配置，通过 java 命令执行我们刚刚打包好的 jar 包。代码如下：
+
+```
+"J-image-search-server-mcp": {
+      "command": "java",
+      "args": [
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-Dspring.main.web-application-type=none",
+        "-Dlogging.pattern.console=",
+        "-jar",
+        "J-image-search-server-mcp/target/J-image-search-server-mcp-0.0.1-SNAPSHOT.jar"
+      ],
+      "env": {}
+    }
+```
+
+3）接下来⁠测试 SSE 连接‌方式，首先修改 MCP 服务端的配置‎文件，激活 SSE‌ 的配置：
+
+```
+spring:
+  application:
+    name: J-image-search-server-mcp
+  profiles:
+    active: sse
+server:
+  port: 8127
+```
+
+然后以 Debug 模式启动 MCP 服务。
+
+然后修改客⁠户端的配置文件，添‌加 SSE 配置，同时要注释原有的 ‎stdio 配置以‌避免端口冲突：
+
+```
+spring:
+  ai:
+    mcp:
+      client:
+        sse:
+          connections:
+            server1:
+              url: http://localhost:8127
+```
+
+## MCP 开发最佳实践
+
+1）慎用 MCP：MCP 不是银弹，其本质就是工具调用，只不过统一了标准、更容易共享而已。如果我们自己开发一些不需要共享的工具，完全没必要使用 MCP，可以节约开发和部署成本。我个人的建议是 **能不用就不用**，先开发工具调用，之后需要提供 MCP 服务时再将工具调用转换成 MCP 服务即可。
+
+2）传输模式选择：⁠Stdio 模式作为客户端子进程运行‌，无需网络传输，因此安全性和性能都更高，更适合小型项目；SSE 模式适合‎作为独立服务部署，可以被多客户端共享‌调用，更适合模块化的中大型项目团队。
+
+3）明确服务：设计 MCP 服务时，要合理划分工具和资源，并且利用 `@Tool`、`@ToolParam` 注解尽可能清楚地描述工具的作用，便于 AI 理解和选择调用。
+
+4）注意容错⁠：和工具开发一样，要注意‌ MCP 服务的容错性和健壮性，捕获并处理所有可‎能的异常，并且返回友好的‌错误信息，便于客户端处理。
+
+5）性能优化：MCP 服⁠务端要防止单次执行时间过长，可以采用异步模式来‌处理耗时操作，或者设置超时时间，客户端也要合理设置超时时间，防‎止因为 MCP 调用时间过长而导致 AI 应用‌阻塞                
+
+6）跨平台兼容性：开发 MCP 服务时，应该考虑在 Windows、Linux 和 macOS 等不同操作系统上的兼容性。特别是使用 stdio 传输模式时，注意路径分隔符差异、进程启动方式和环境变量设置。比如客户端在 Windows 系统中使用命令时需要额外添加 `.cmd` 后缀。
+
+## **AI 智能体构建**
+
+### 智能体的分类
+
+跟人的生长⁠阶段一样，智能体也‌是可以不断进化的。按照自主性和规划能‎力，智能体可以分为‌几个层次：
+
+1）反应式智能⁠体：仅根据当前输入和固定规则‌做出反应，类似简单的聊天机器人，没有真正的规划能力。23‎ 年时的大多数 AI 聊天机‌器人应用，几乎都是反应式智能体。
+
+2）有限规划智能体：能进⁠行简单地多步骤执行，但执行路径通常是预设的或有‌严格限制的。鉴定为 “能干事、但干不了复杂的大事”。24 年流行的很多可联网搜索内容、调用知‎识库和工具的 AI 应用，都属于这类智能体。比‌如 ChatGPT + Plugins
+
+3）自主规⁠划智能体：也叫目标导‌向智能体，能够根据任务目标自主分解任务、‎制定计划、选择工具并‌一步步执行，直到完成任务。
+
+比如 25 年初很火的 M⁠anus 项目，它的核心亮点在于其 “自主执行” 能‌力。据官方介绍，Manus 能够在虚拟机中调用各种工具（如编写代码、爬取数据）完成任务。其应用场景‎覆盖旅行规划、股票分析、教育内容生成等 40 余个‌领域，所以在当时给了很多人震撼感。
+
+但其实早在这之前，就有类似的项目了，比如 AutoGPT，所以 Manus 大火的同时也被人诟病 “会营销而已”。甚至没隔多久就有小团队开源了 Manus 的复刻版 —— [OpenManus](https://github.com/FoundationAgents/OpenManus)，这类智能体通过 “思考 - 行动 - 观察” 的循环模式工作，能够持续推进任务直至完成目标。
+
+### 智能体实现关键技术
+
+#### CoT 思维链
+
+CoT（Chain of⁠ Thought）思维链是一种让 AI 像人类一‌样 “思考” 的技术，帮助 AI 在处理复杂问题时能够按步骤思考。对于复杂的推理类问题，先思考后‎执行，效果往往更好。而且还可以让模型在生成答案时‌展示推理过程，便于我们理解和优化 AI。
+
+CoT 的实现方式其实很简单⁠，可以在输入 Prompt 时，给模型提供额外的提示或‌引导，比如 “让我们一步一步思考这个问题”，让模型以逐步推理的方式生成回答。还可以运用 Prompt 的优化‎技巧 few shot，给模型提供包含思维链的示例问题‌和答案，让模型学习如何构建自己的思维链。
+
+在 Ope⁠nManus 早期‌版本中，可以看到实现 CoT 的系统‎提示词：
+
+```
+You are an assistant focused on Chain of Thought reasoning. For each question, please follow these steps:  
+  
+1. Break down the problem: Divide complex problems into smaller, more manageable parts  
+2. Think step by step: Think through each part in detail, showing your reasoning process  
+3. Synthesize conclusions: Integrate the thinking from each part into a complete solution  
+4. Provide an answer: Give a final concise answer  
+  
+Your response should follow this format:  
+Thinking: [Detailed thought process, including problem decomposition, reasoning for each step, and analysis]  
+Answer: [Final answer based on the thought process, clear and concise]  
+  
+Remember, the thinking process is more important than the final answer, as it demonstrates how you reached your conclusion.
+```
+
+#### Agent Loop 执行循环
+
+Agent⁠ Loop 是智能体‌最核心的工作机制，指智能体在没有用户输入‎的情况下，自主重复执‌行推理和工具调用的过程。
+
+在传统的聊天模型中，⁠每次用户提问后，AI 回复一次就结束‌了。但在智能体中，AI 回复后可能会继续自主执行后续动作（如调用工具、处理结果、继续‎推理），形成一个自主执行的循环，直到任务‌完成（或者超出预设的最大步骤数）。
+
+Agent Loop 的实现很简单，参考代码如下：
+
+```
+public String execute() {  
+    List<String> results = new ArrayList<>();  
+    while (currentStep < MAX_STEPS && !isFinished) {  
+        currentStep++;  
+        
+        String stepResult = executeStep();  
+        results.add("步骤 " + currentStep + ": " + stepResult);  
+    }  
+    if (currentStep >= MAX_STEPS) {  
+        results.add("达到最大步骤数: " + MAX_STEPS);  
+    }  
+    return String.join("\n", results);  
+}
+```
+
+#### ReAct 模式
+
+ReAct（Reas⁠oning + Acting）是一种结合‌推理和行动的智能体架构，它模仿人类解决问题时 ” 思考 - 行动 - 观察” 的循‎环，目的是通过交互式决策解决复杂任务，是‌目前最常用的智能体工作模式之一。
+
+核心思想：
+
+1. 推理（Reason）：将原始问题拆分为多步骤任务，明确当前要执行的步骤。
+2. 行动（Act）：调用外部工具执行动作，比如调用搜索引擎、打开浏览器访问网页等。
+3. 观察（Observe）：获取工具返回的结果，反馈给智能体进行下一步决策。比如将打开的网页代码输入给 AI。
+4. 循环迭代：不断重复上述 3 个过程，直到任务完成或达到终止条件。
+
+ReAct 流程如图：
+
+![image-20260323201158951](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260323201200142.png)
+
+#### 所需支持系统
+
+除了基本的工作机制外，智能体的实现还依赖于很多支持系统。
+
+1）首先是 ⁠AI 大模型，这个就不‌多说了，大模型提供了思考、推理和决策的核心能‎力，越强的 AI 大模‌型通常执行任务的效果越好。
+
+2）记忆系统
+
+智能体需要记忆系统⁠来存储对话历史、中间结果和执行状态，‌这样它才能够进行连续对话并根据历史对话分析接下来的工作步骤。之前我们学习‎过如何使用 Spring AI 的 ‌ChatMemory 实现对话记忆。
+
+3）知识库
+
+尽管大语言模型拥有⁠丰富的参数知识，但针对特定领域的专‌业知识往往需要额外的知识库支持。之前我们学习过，通过 RAG 检索增‎强生成 + 向量数据库等技术，智能‌体可以检索并利用专业知识回答问题。
+
+4）工具调用
+
+工具是扩展智能体⁠能力边界的关键，智能体通过工具调‌用可以访问搜索引擎、数据库、API 接口等外部服务，极大地增强了‎其解决实际问题的能力。当然，MC‌P 也可以算是工具调用的一种。
