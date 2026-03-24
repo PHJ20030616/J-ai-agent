@@ -24,30 +24,6 @@
 - **数据与存储**: PGvector (向量数据库), Kryo (高性能序列化)
 - **协议与接口**: MCP (Model Context Protocol), SSE, OpenAPI
 
-
-
-
-
-# TODO
-
-**扩展思路**
-
-1）自定义 Advisor，比如权限校验、违禁词校验 Advisor
-
-2）自定义对话记忆，比如持久化对话到 MySQL 或 Redis 存储中
-
-3）编写一套包含变量的 Prompt 模板，并保存为资源文件，从文件加载模板
-
-4）开发一个多模态对话助手，能够让 AI 解释图片（建议使用国内的 AI 大模型）
-
-5）阅读 Spring AI 官方的 [ChatMemory 文档](https://docs.spring.io/spring-ai/reference/api/chat-memory.html)，了解如何自主构造 ChatMemory
-
-
-
-# 创新点：
-
-![image-20260320175022614](https://cdn.jsdelivr.net/gh/PHJ20030616/personal_pic/img/20260320175024119.png)
-
 # 智能体
 
 ## 大模型相关概念
