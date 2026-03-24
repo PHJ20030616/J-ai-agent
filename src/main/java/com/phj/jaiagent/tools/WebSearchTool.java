@@ -22,9 +22,12 @@ public class WebSearchTool {
     // SearchAPI 的搜索接口地址
     private static final String SEARCH_API_URL = "https://www.searchapi.io/api/v1/search";
 
+    // 声明一个不可变的字符串变量，用于存储搜索 API 的密钥
     private final String apiKey;
 
-    public WebSearchTool(String apiKey) {
+    // 声明构造函数，使用 @org.springframework.beans.factory.annotation.Value 注解从配置文件注入 search-api.api-key 属性值，默认为空字符串
+    public WebSearchTool(@org.springframework.beans.factory.annotation.Value("${search-api.api-key:}") String apiKey) {
+        // 将传入的 API 密钥赋值给当前类的成员变量 apiKey
         this.apiKey = apiKey;
     }
 

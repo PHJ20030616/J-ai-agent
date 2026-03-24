@@ -69,7 +69,7 @@ public class ToolCallAgent extends ReActAgent {
         try {
             ChatResponse chatResponse = getChatClient().prompt(prompt)
                     .system(getSystemPrompt())
-                    .tools(availableTools)
+                    .toolCallbacks(availableTools)
                     .call()
                     .chatResponse();
             // 记录响应，用于等下 Act
@@ -101,6 +101,19 @@ public class ToolCallAgent extends ReActAgent {
             getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()));
             return false;
         }
+    }
+
+    /**
+     * 获取最新一次思考的结果文本
+     *
+     * @return 思考结果文本
+     */
+    @Override
+    public String getThinkResult() {
+        if (toolCallChatResponse != null && toolCallChatResponse.getResult() != null) {
+            return toolCallChatResponse.getResult().getOutput().getText();
+        }
+        return "";
     }
 
     /**

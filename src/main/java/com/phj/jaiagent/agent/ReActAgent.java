@@ -21,6 +21,13 @@ public abstract class ReActAgent extends BaseAgent {
     public abstract boolean think();
 
     /**
+     * 获取最新一次思考的结果文本
+     *
+     * @return 思考结果文本
+     */
+    public abstract String getThinkResult();
+
+    /**
      * 执行决定的行动
      *
      * @return 行动执行结果
@@ -37,11 +44,17 @@ public abstract class ReActAgent extends BaseAgent {
         try {
             // 先思考
             boolean shouldAct = think();
+            String thinkResult = getThinkResult();
+            
             if (!shouldAct) {
-                return "思考完成 - 无需行动";
+                return cn.hutool.core.util.StrUtil.isNotBlank(thinkResult) ? thinkResult : "思考完成 - 无需行动";
             }
             // 再行动
-            return act();
+            String actResult = act();
+            if (cn.hutool.core.util.StrUtil.isNotBlank(thinkResult)) {
+                return thinkResult + "\n\n" + actResult;
+            }
+            return actResult;
         } catch (Exception e) {
             // 记录异常日志
             e.printStackTrace();
