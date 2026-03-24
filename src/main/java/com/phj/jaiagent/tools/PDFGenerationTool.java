@@ -10,12 +10,14 @@ import com.itextpdf.layout.element.Paragraph;
 import com.phj.jaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 /**
  * PDF 生成工具
  */
+@Component
 public class PDFGenerationTool {
 
     @Tool(description = "Generate a PDF file with given content", returnDirect = false)
