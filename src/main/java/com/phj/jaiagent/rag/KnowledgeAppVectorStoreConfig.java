@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
-@Configuration
+//@Configuration
 public class KnowledgeAppVectorStoreConfig {
 
     @Resource

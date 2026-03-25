@@ -168,11 +168,11 @@ public class KnowledgeApp {
                 .user(rewrittenMessage)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 // 应用 RAG 知识库问答
-                .advisors(new QuestionAnswerAdvisor(KnowledgeAppVectorStoreConfig))
+//                .advisors(new QuestionAnswerAdvisor(KnowledgeAppVectorStoreConfig))
                 // 应用 RAG 检索增强服务（基于云知识库服务）
 //                .advisors(knowledgeAppRagCloudAdvisor)
 //                 应用 RAG 检索增强服务（基于 PgVector 向量存储）
-//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 // TODO 目前这里的检索增强服务反而会影响结果，待修复
 
                 // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
